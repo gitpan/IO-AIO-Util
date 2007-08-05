@@ -1,0 +1,16 @@
+--- #YAML:1.0
+name:                IO-AIO-Util
+version:             0.01
+abstract:            useful functions missing from IO::AIO
+license:             perl
+generated_by:        ExtUtils::MakeMaker version 6.36
+distribution_type:   module
+requires:     
+    File::Spec:                    0
+    IO::AIO:                       2
+    Test::More:                    0
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - gray <gray@cpan.org>
