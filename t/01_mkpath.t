@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests=>6;
+use Test::More tests=>11;
 use IO::AIO::Util qw(aio_mkpath);
 use File::Temp qw(tempdir tempfile);
 use File::Spec::Functions qw(catdir);
@@ -13,26 +13,22 @@ sub pcb {
     }
 }
 
-# CLEANUP doens't work, so do it manually in an END block.
-my $tmp = tempdir();
-END {
-    IO::AIO::aio_rmtree $tmp, sub {
-        $_[0] and diag "Failed to remove test directory: $tmp";
-    };
-}
+my $tmp = tempdir( CLEANUP => 1 );
 
 {
     my $dir = catdir( $tmp, qw(dir1 dir2) );
 
     aio_mkpath $dir, 0777, sub {
-        is( $_[0], 0, 'return status: $_[0]' );
-        is( -d $dir, 1, "-d $dir" );
+        is( $_[0], 0, 'new path: return status' );
+        ok( ! $!, 'new path: errno' );
+        is( -d $dir, 1, "new path: -d $dir" );
     };
 
     pcb;
 
     aio_mkpath $dir, 0777, sub {
-        is( $_[0], 0, "directory already exists");
+        is( $_[0], 0, 'existing path: return status' );
+        ok( ! $!, 'existing path: errno' );
     };
 
     pcb;
@@ -42,7 +38,8 @@ END {
     my (undef, $file) = tempfile( DIR => $tmp );
 
     aio_mkpath $file, 0777, sub {
-        is( $_[0], -1, "file already exists" );
+        is( $_[0], -1, 'existing file: return status' );
+        is( 0+$!, &POSIX::ENOTDIR, 'existing file: errno' );
     };
 
     pcb;
@@ -54,23 +51,20 @@ END {
     my $subdir = catdir($dir, 'dir3');
 
     aio_mkpath $subdir, 0777, sub {
-        is( $_[0], -1, "bad permissions" );
+        is( $_[0], -1, "permission denied: return status" );
+        is( 0+$!, &POSIX::EACCES, 'permission denied: errno' );
     };
 
     pcb;
-
-    chmod 0777, $dir or die "$dir: $!\n";
 }
 
 {
     my $dir = catdir( $tmp, qw(dir4 dir5) );
 
     aio_mkpath $dir, 0111, sub {
-        is( $_[0], -1, "mkpath 0111, $dir" );
+        is( $_[0], -1, "bad permissions: return status" );
+        is( 0+$!, &POSIX::EACCES, 'bad permissions: errno' );
     };
 
     pcb;
-
-    $dir = catdir( $tmp, qw(dir4) );
-    chmod 0777, $dir or die "$dir: $!\n";
 }

@@ -5,8 +5,9 @@ use strict;
 use base qw(Exporter);
 use IO::AIO 2;
 use File::Spec::Functions qw(splitpath splitdir catpath catdir);
+use POSIX ();
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our @EXPORT_OK = qw(aio_mkpath);
 
 sub aio_mkpath ($$;$) {
@@ -47,13 +48,13 @@ sub aio_mkpath ($$;$) {
                     # fail if part of the expected path is not a dir
                     if ( ! -d _ ) {
                         $grp->result(-1);
-                        $grp->errno($!);
+                        $grp->errno( &POSIX::ENOTDIR );
                         return $grp->cancel_subs;
                     }
                     return $statgrp->cancel_subs;
                 }
                 # stat was not succesful, for reason other than non-existence
-                elsif ( $_[0] and not $!{ENOENT} ) {
+                elsif ( $_[0] and $! != &POSIX::ENOENT ) {
                     $grp->result(-1);
                     $grp->errno($!);
                     return $grp->cancel_subs;
