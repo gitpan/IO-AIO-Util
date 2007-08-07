@@ -45,7 +45,10 @@ my $tmp = tempdir( CLEANUP => 1 );
     pcb;
 }
 
-{
+SKIP: {
+    skip "cannot test permissions errors as this user", 2
+        unless $> > 0 and $) > 0;
+
     my $dir = catdir( $tmp, qw(dir1 dir2) );
     chmod 0000, $dir or die "$!\n";
     my $subdir = catdir($dir, 'dir3');
@@ -58,7 +61,10 @@ my $tmp = tempdir( CLEANUP => 1 );
     pcb;
 }
 
-{
+SKIP: {
+    skip "cannot test permissions errors as this user", 2
+        unless $> > 0 and $) > 0;
+
     my $dir = catdir( $tmp, qw(dir4 dir5) );
 
     aio_mkpath $dir, 0111, sub {

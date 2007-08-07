@@ -1,5 +1,8 @@
 Revision history for IO-AIO-Util
 
+0.03  Tue Aug 7 20:27:06 GMT 2007
+    - Skipped tests for permissions errors when run as root.
+
 0.02  Mon Aug 6 06:50:37 GMT 2007
     - Used POSIX instead of %!.
     - Set errno to ENOTDIR when appropriate.

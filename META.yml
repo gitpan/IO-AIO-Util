@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                IO-AIO-Util
-version:             0.02
+version:             0.03
 abstract:            useful functions missing from IO::AIO
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.36
