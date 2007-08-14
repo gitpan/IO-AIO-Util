@@ -1,5 +1,8 @@
 Revision history for IO-AIO-Util
 
+0.04  Tue Aug 14 02:59:08 GMT 2007
+    - Allowed aio_mktree to be exported.
+
 0.03  Tue Aug 7 20:27:06 GMT 2007
     - Skipped tests for permissions errors when run as root.
 
