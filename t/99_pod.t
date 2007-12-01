@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 use Test::More;
 
 if ( ($ENV{CPAN_AUTHOR_TESTS}||'') !~ /\bIO::AIO::Util\b/ ) {

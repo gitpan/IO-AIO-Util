@@ -9,10 +9,10 @@ WriteMakefile(
     VERSION_FROM  => 'lib/IO/AIO/Util.pm',
     ABSTRACT_FROM => 'lib/IO/AIO/Util.pm',
     PREREQ_PM     => {
-                        'File::Spec' => 0,
-                        'IO::AIO'    => 2,
-                        'Test::More' => 0,
-                     },
+        'File::Spec' => 0,
+        'IO::AIO'    => 2,
+        'Test::More' => 0,
+    },
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean         => { FILES => 'IO-AIO-Util-*' },
 );

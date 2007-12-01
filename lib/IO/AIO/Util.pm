@@ -2,43 +2,43 @@ package IO::AIO::Util;
 
 use strict;
 
-use base qw(Exporter);
+use base qw( Exporter );
 use IO::AIO 2;
-use File::Spec::Functions qw(splitpath splitdir catpath catdir);
+use File::Spec::Functions qw( splitpath splitdir catpath catdir );
 use POSIX ();
 
-our $VERSION = '0.04';
-our @EXPORT_OK = qw(aio_mkpath aio_mktree);
+our $VERSION = '0.05';
+our @EXPORT_OK = qw( aio_mkpath aio_mktree );
 
-sub aio_mkpath ($$;$) {
+sub aio_mkpath ( $$;$ ) {
     aio_block {
-        my ($path, $mode, $cb) = @_;
+        my ( $path, $mode, $cb ) = @_;
 
         my $pri = aioreq_pri;
         my $grp = aio_group $cb;
 
         # Default is success.
-        $grp->result(0);
+        $grp->result( 0 );
 
         my @make;
         my $statgrp = add $grp aio_group sub {
             my $dirgrp = add $grp aio_group;
-            for my $path (@make) {
+            for my $path ( @make ) {
                 aioreq_pri $pri;
                 add $dirgrp aio_mkdir $path, $mode, sub {
                     if ( $_[0] ) {
                         $grp->result( $_[0] );
-                        $grp->errno($!);
+                        $grp->errno( $! );
                         return $grp->cancel_subs;
                     }
                 };
             }
         };
 
-        my ($vol, $dir, undef) = splitpath($path, 1);
-        my @dirs = splitdir($dir);
+        my ( $vol, $dir, undef ) = splitpath( $path, 1 );
+        my @dirs = splitdir( $dir );
 
-        while (@dirs) {
+        while ( @dirs ) {
             my $path = $path;
 
             aioreq_pri $pri;
@@ -47,7 +47,7 @@ sub aio_mkpath ($$;$) {
                 if ( not $_[0] ) {
                     # fail if part of the expected path is not a dir
                     if ( ! -d _ ) {
-                        $grp->result(-1);
+                        $grp->result( -1 );
                         $grp->errno( &POSIX::ENOTDIR );
                         return $grp->cancel_subs;
                     }
@@ -55,8 +55,8 @@ sub aio_mkpath ($$;$) {
                 }
                 # stat was not succesful, for reason other than non-existence
                 elsif ( $_[0] and $! != &POSIX::ENOENT ) {
-                    $grp->result(-1);
-                    $grp->errno($!);
+                    $grp->result( -1 );
+                    $grp->errno( $! );
                     return $grp->cancel_subs;
                 }
 
@@ -65,12 +65,13 @@ sub aio_mkpath ($$;$) {
         }
         continue {
             pop @dirs;
-            $path = catpath($vol, catdir(@dirs), '');
+            $path = catpath( $vol, catdir( @dirs ), '' );
         }
 
         $grp;
     }
 }
+
 *aio_mktree = \&aio_mkpath;
 
 1;
@@ -93,7 +94,7 @@ This module provides useful functions that are missing from C<IO::AIO::Util>.
 
 =head1 FUNCTIONS
 
-=over 4
+=over
 
 =item aio_mkpath $pathname, $mode, $callback->($status)
 
@@ -110,9 +111,9 @@ L<IO::AIO|IO::AIO>
 
 =head1 REQUESTS AND BUGS
 
-Please report any bugs or feature requests to 
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=IO-AIO-Util>. I will 
-be notified, and then you'll automatically be notified of progress on your bug 
+Please report any bugs or feature requests to
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=IO-AIO-Util>. I will
+be notified, and then you'll automatically be notified of progress on your bug
 as I make changes.
 
 =head1 SUPPORT
@@ -123,7 +124,7 @@ You can find documentation for this module with the perldoc command.
 
 You can also look for information at:
 
-=over 4
+=over
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
@@ -147,7 +148,7 @@ L<http://search.cpan.org/dist/IO-AIO-Util>
 
 Copyright (C) 2007 gray <gray at cpan.org>, all rights reserved.
 
-This library is free software; you can redistribute it and/or modify it under 
+This library is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =head1 AUTHOR

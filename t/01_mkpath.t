@@ -1,13 +1,14 @@
 use strict;
+use warnings;
 use Test::More tests=>11;
-use IO::AIO::Util qw(aio_mkpath);
-use File::Temp qw(tempdir tempfile);
-use File::Spec::Functions qw(catdir);
+use IO::AIO::Util qw( aio_mkpath );
+use File::Temp qw( tempdir tempfile );
+use File::Spec::Functions qw( catdir );
 
 # Copied from IO::AIO tests
 sub pcb {
-    while (IO::AIO::nreqs) {
-        vec (my $rfd="", IO::AIO::poll_fileno, 1) = 1;
+    while ( IO::AIO::nreqs ) {
+        vec ( my $rfd="", IO::AIO::poll_fileno, 1 ) = 1;
         select $rfd, undef, undef, undef;
         IO::AIO::poll_cb;
     }
@@ -16,7 +17,7 @@ sub pcb {
 my $tmp = tempdir( CLEANUP => 1 );
 
 {
-    my $dir = catdir( $tmp, qw(dir1 dir2) );
+    my $dir = catdir( $tmp, qw( dir1 dir2 ) );
 
     aio_mkpath $dir, 0777, sub {
         is( $_[0], 0, 'new path: return status' );
@@ -39,7 +40,7 @@ my $tmp = tempdir( CLEANUP => 1 );
 
     aio_mkpath $file, 0777, sub {
         is( $_[0], -1, 'existing file: return status' );
-        is( 0+$!, &POSIX::ENOTDIR, 'existing file: errno' );
+        is( 0 + $!, &POSIX::ENOTDIR, 'existing file: errno' );
     };
 
     pcb;
@@ -55,7 +56,7 @@ SKIP: {
 
     aio_mkpath $subdir, 0777, sub {
         is( $_[0], -1, "permission denied: return status" );
-        is( 0+$!, &POSIX::EACCES, 'permission denied: errno' );
+        is( 0 + $!, &POSIX::EACCES, 'permission denied: errno' );
     };
 
     pcb;
@@ -65,7 +66,7 @@ SKIP: {
     skip "cannot test permissions errors as this user", 2
         unless $> > 0 and $) > 0;
 
-    my $dir = catdir( $tmp, qw(dir4 dir5) );
+    my $dir = catdir( $tmp, qw( dir4 dir5 ) );
 
     aio_mkpath $dir, 0111, sub {
         is( $_[0], -1, "bad permissions: return status" );
