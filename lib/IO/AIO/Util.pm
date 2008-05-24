@@ -7,69 +7,67 @@ use IO::AIO 2;
 use File::Spec::Functions qw( splitpath splitdir catpath catdir );
 use POSIX ();
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 our @EXPORT_OK = qw( aio_mkpath aio_mktree );
 
 sub aio_mkpath ( $$;$ ) {
-    aio_block {
-        my ( $path, $mode, $cb ) = @_;
+    my ( $path, $mode, $cb ) = @_;
 
-        my $pri = aioreq_pri;
-        my $grp = aio_group $cb;
+    my $pri = aioreq_pri;
+    my $grp = aio_group $cb;
 
-        # Default is success.
-        $grp->result( 0 );
+    # Default is success.
+    $grp->result( 0 );
 
-        my @make;
-        my $statgrp = add $grp aio_group sub {
-            my $dirgrp = add $grp aio_group;
-            for my $path ( @make ) {
-                aioreq_pri $pri;
-                add $dirgrp aio_mkdir $path, $mode, sub {
-                    if ( $_[0] ) {
-                        $grp->result( $_[0] );
-                        $grp->errno( $! );
-                        return $grp->cancel_subs;
-                    }
-                };
-            }
-        };
-
-        my ( $vol, $dir, undef ) = splitpath( $path, 1 );
-        my @dirs = splitdir( $dir );
-
-        while ( @dirs ) {
-            my $path = $path;
-
+    my @make;
+    my $statgrp = add $grp aio_group sub {
+        my $dirgrp = add $grp aio_group;
+        for my $path ( @make ) {
             aioreq_pri $pri;
-            add $statgrp aio_stat $path, sub {
-                # stat was successful
-                if ( not $_[0] ) {
-                    # fail if part of the expected path is not a dir
-                    if ( ! -d _ ) {
-                        $grp->result( -1 );
-                        $grp->errno( &POSIX::ENOTDIR );
-                        return $grp->cancel_subs;
-                    }
-                    return $statgrp->cancel_subs;
-                }
-                # stat was not succesful, for reason other than non-existence
-                elsif ( $_[0] and $! != &POSIX::ENOENT ) {
-                    $grp->result( -1 );
+            add $dirgrp aio_mkdir $path, $mode, sub {
+                if ( $_[0] ) {
+                    $grp->result( $_[0] );
                     $grp->errno( $! );
                     return $grp->cancel_subs;
                 }
-
-                unshift @make, $path;
             };
         }
-        continue {
-            pop @dirs;
-            $path = catpath( $vol, catdir( @dirs ), '' );
-        }
+    };
 
-        $grp;
+    my ( $vol, $dir, undef ) = splitpath( $path, 1 );
+    my @dirs = splitdir( $dir );
+
+    while ( @dirs ) {
+        my $path = $path;
+
+        aioreq_pri $pri;
+        add $statgrp aio_stat $path, sub {
+            # stat was successful
+            if ( not $_[0] ) {
+                # fail if part of the expected path is not a dir
+                if ( ! -d _ ) {
+                    $grp->result( -1 );
+                    $grp->errno( &POSIX::ENOTDIR );
+                    return $grp->cancel_subs;
+                }
+                return $statgrp->cancel_subs;
+            }
+            # stat was not succesful, for reason other than non-existence
+            elsif ( $_[0] and $! != &POSIX::ENOENT ) {
+                $grp->result( -1 );
+                $grp->errno( $! );
+                return $grp->cancel_subs;
+            }
+
+            unshift @make, $path;
+        };
     }
+    continue {
+        pop @dirs;
+        $path = catpath( $vol, catdir( @dirs ), '' );
+    }
+
+    $grp;
 }
 
 *aio_mktree = \&aio_mkpath;
