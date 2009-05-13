@@ -2,8 +2,8 @@ use strict;
 use warnings;
 use Test::More;
 
-if ( ($ENV{CPAN_AUTHOR_TESTS}||'') !~ /\bIO::AIO::Util\b/ ) {
-    plan skip_all => 'author tests';
+unless ($ENV{PERL_AUTHOR_TESTING}) {
+    plan skip_all => 'PERL_AUTHOR_TESTING environment variable not set';
 }
 
 eval "use Test::Pod 1.00";
