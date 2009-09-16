@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               IO-AIO-Util
-version:            0.08
+version:            0.09
 abstract:           useful functions missing from IO::AIO
 author:
     - gray <gray@cpan.org>
